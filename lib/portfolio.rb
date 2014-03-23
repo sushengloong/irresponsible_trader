@@ -6,6 +6,8 @@ class Portfolio
     @strategy_stream.on_value(&method(:on_order))
 
     @cash = cash
+    @starting_capital = @cash
+
     @holdings = {}
     @commission_per_trade = commission_per_trade
     @total_commissions = 0.0
@@ -16,21 +18,28 @@ class Portfolio
   def on_order order
     symbol = order[:symbol]
     @holdings[symbol] ||= 0
+    price = order[:price].to_f
 
-    diff = case order[:type]
-           when :buy
+    # when :num_shares is blank, trader
+    # wants to max out his cash to buy
+    # as many shares as possible.
+    diff = if order[:num_shares].blank?
+             (@cash / price).floor
+           else
              order[:num_shares].to_i
-           when :sell
-             -order[:num_shares].to_i
            end
-    value = diff * order[:price].to_f
+
+    diff = -diff if order[:type] == :sell
+    value = diff * price
 
     if order[:type] == :buy && value > @cash
       p "not enough cash to buy"
-    else
+    elsif diff.abs != 0
       @holdings[symbol] += diff
       @cash = (@cash - value).round 3
       @total_commissions += @commission_per_trade
+
+      p "#{order[:type]} #{diff.abs} share(s) @ $#{price}"
     end
 
     summary.each { |l| p l }
@@ -45,16 +54,16 @@ class Portfolio
 
   def summary
     [
-      '===============',
       "Date: #{$last_date}",
-      "Cash: $#{@cash}",
-      "Total Holding Value: $#{total_value}",
+      "Cash In Hand: $#{@cash}",
       "Total Commissions Paid: $#{@total_commissions}",
+      "Total Holding Value: $#{total_value}",
       @holdings.map do |k, v|
         last_close = $last_closing_prices[k][:adj_close].to_f
         value = (v * last_close).round 3
         "#{k}: #{v} x $#{last_close} = $#{value}"
       end,
+      "Profit: $#{(@cash + total_value - @total_commissions - @starting_capital).round(3)}",
       '==============='
     ]
   end
