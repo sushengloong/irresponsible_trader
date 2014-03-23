@@ -30,12 +30,17 @@ module Portfolio
 
       # when :num_shares is blank, trader
       # wants to max out his cash to buy
-      # as many shares as possible.
+      # or sell as many shares as possible.
       num_shares = if order[:num_shares].blank?
-                     (@cash / price).floor
+                     if type == :buy
+                       (@cash / price).floor
+                     elsif type == :sell
+                       @holdings.num_shares_for_symbol symbol
+                     end
                    else
                      order[:num_shares].to_i
                    end
+
       [symbol, type, price, num_shares]
     end
 
@@ -46,8 +51,8 @@ module Portfolio
         no_order symbol, price, num_shares
       elsif type == :buy
         enter_long symbol, price, num_shares
-      else
-        enter_long symbol, price, num_shares
+      elsif type == :sell
+        exit_long symbol, price, num_shares
       end
     end
 
@@ -70,7 +75,7 @@ module Portfolio
     def exit_long symbol, price, num_shares
       transacted_num_shares = @holdings.sell symbol, num_shares
       value = price * transacted_num_shares
-      @cash = (@cash - value).round 3
+      @cash = (@cash + value).round 3
       @total_commissions += @commission_per_trade
 
       p "[Exit Long] Sell #{transacted_num_shares} share(s) @ $#{price} and broker fee @ $#{@commission_per_trade} flat"

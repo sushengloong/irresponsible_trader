@@ -6,7 +6,10 @@ module Portfolio
     end
 
     def buy symbol, price, num_shares
-      @holdings << Holding.new(symbol, price, num_shares)
+      holding = Holding.new(symbol, price, num_shares)
+      @holdings << holding
+      clear_empty_holdings
+      holding
     end
 
     # this decides on which shares to sell off
@@ -18,6 +21,7 @@ module Portfolio
         break if unfilled == 0
         transacted_num_shares += holding.sell(unfilled)
       end
+      clear_empty_holdings
       transacted_num_shares
     end
 
@@ -28,6 +32,10 @@ module Portfolio
 
     def num_shares_for_symbol symbol
       holdings_for_symbol(symbol).inject(0) { |sum, holding| sum + holding.num_shares }
+    end
+
+    def cheapest_price_for_symbol symbol
+      holdings_for_symbol(symbol).map { |holding| holding.transacted_price }.min
     end
 
     def total_value
@@ -43,6 +51,12 @@ module Portfolio
         value = (holding.num_shares * last_close).round 3
         "#{holding.symbol}: #{holding.num_shares} x $#{last_close} = $#{value}"
       end
+    end
+
+    private
+
+    def clear_empty_holdings
+      @holdings.reject!{ |holding| holding.num_shares.to_i <= 0 }
     end
   end
 end

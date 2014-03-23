@@ -23,10 +23,18 @@ module Strategy
         current_close = data[:adj_close].to_f
         last_close = @last_close[symbol].to_f
         change = current_close - last_close
-        change_pct = (change / last_close) * 100
+
+        # TODO to refactor - violate tell don't ask
+        cheapest_holding_price = @portfolio.holdings.cheapest_price_for_symbol symbol
+        if cheapest_holding_price.blank?
+          profit_estimate_pct = 0
+        else
+          profit_estimate_pct = (current_close - cheapest_holding_price).to_f / cheapest_holding_price * 100
+        end
+
         trade_type = if holding_num_shares == 0 && change < 0
                        :buy
-                     elsif holding_num_shares > 0 && change_pct > @limit
+                     elsif holding_num_shares > 0 && profit_estimate_pct > @limit
                        :sell
                      end
 
