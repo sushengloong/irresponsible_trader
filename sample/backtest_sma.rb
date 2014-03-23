@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 
-require_relative 'lib/irresponsible_trader'
+require_relative '../lib/irresponsible_trader'
 
 # set up trading configuration
 start_date = 6.months.ago.to_date

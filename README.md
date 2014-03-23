@@ -5,4 +5,4 @@ A Ruby-based algorithmic trading framework.
 
 Quick Start
 ==========
-./backtest.rb
+Check out backtest samples in sample directory
