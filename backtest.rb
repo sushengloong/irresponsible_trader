@@ -2,16 +2,22 @@
 
 require_relative 'lib/irresponsible_trader'
 
-feeder = Feeder.new(1.years.ago.to_date,
-                    Date.today,
-                    %w{ AAPL GOOG MSFT FB TWTR })
-feeder_stream = Frappuccino::Stream.new feeder
+# set up trading configuration
+start_date = 6.months.ago.to_date
+end_date = Date.current
+stock_symbols = %w{ AAPL GOOG MSFT }
+starting_capital = 10_000
+commission_per_trade = 25
 
-ta_stream = Frappuccino::Stream.new SimpleMovingAverage.new(feeder_stream, 25, 150)
+# Initialize feeder to fetch prices data from Yahoo Finance
+feeder = Feeder.new start_date,
+                    end_date,
+                    stock_symbols
 
-strategy_stream = Frappuccino::Stream.new SmaStrategy.new(ta_stream)
+# Initialize custom strategy with the feeder.
+# Strategy::SmaStrategy is a sample strategy which compares
+# slow and fast simple moving averages.
+sma_strategy = Strategy::SmaStrategy.new feeder, starting_capital, commission_per_trade
 
-Frappuccino::Stream.new Portfolio.new(strategy_stream, 10000, 25)
-
-feeder.fetch
-feeder.start
+# Begin backtesting
+sma_strategy.start

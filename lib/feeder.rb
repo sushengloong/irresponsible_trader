@@ -2,11 +2,12 @@ class Feeder
   BASE_URL = 'http://ichart.finance.yahoo.com/table.csv'
   attr_reader :bars
 
-  def initialize start_date, end_date, symbols
+  def initialize start_date, end_date, symbols, fetch_on_init=true
     @start_date = start_date
     @end_date = end_date
     @symbols = symbols
     @bars = {}
+    fetch if fetch_on_init
   end
 
   def fetch

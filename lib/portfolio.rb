@@ -1,13 +1,15 @@
 class Portfolio
   attr_reader :cash, :holdings, :commission_per_trade
 
-  def initialize stream, cash, commission_per_trade
-    @stream = stream
-    @stream.on_value(&method(:on_order))
+  def initialize strategy, cash, commission_per_trade
+    @strategy_stream = Frappuccino::Stream.new strategy
+    @strategy_stream.on_value(&method(:on_order))
+
     @cash = cash
     @holdings = {}
     @commission_per_trade = commission_per_trade
     @total_commissions = 0.0
+
     p "Start new portfolio with cash $#{@cash}"
   end
 

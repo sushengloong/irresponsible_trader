@@ -6,13 +6,15 @@ module IrresponsibleTrader
   require 'awesome_print'
   require 'frappuccino'
 
+  # configure application timezone
+  Time.zone_default = Time.find_zone! 'Singapore'
+
   $last_closing_prices = {}
   $last_date = nil
 
   require_relative 'feeder'
   require_relative 'bar'
   require_relative 'bar_data'
-  require_relative 'sma'
-  require_relative 'sma_strategy'
+  require_relative 'strategy/all'
   require_relative 'portfolio'
 end
