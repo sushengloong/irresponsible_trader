@@ -16,34 +16,50 @@ class Portfolio
   end
 
   def on_order order
-    symbol = order[:symbol]
+    symbol, type, price, num_shares = order_details order
+
     @holdings[symbol] ||= 0
+    market_order symbol, type, price, num_shares
+
+    summary.each { |l| p l }
+    puts
+  end
+
+  def order_details order
+    type = order[:type]
+    symbol = order[:symbol]
     price = order[:price].to_f
 
     # when :num_shares is blank, trader
     # wants to max out his cash to buy
     # as many shares as possible.
-    diff = if order[:num_shares].blank?
-             (@cash / price).floor
-           else
-             order[:num_shares].to_i
-           end
+    num_shares = if order[:num_shares].blank?
+                   (@cash / price).floor
+                 else
+                   order[:num_shares].to_i
+                 end
+    [symbol, type, price, num_shares]
+  end
 
-    diff = -diff if order[:type] == :sell
-    value = diff * price
+  def market_order symbol, type, price, num_shares
+    signed_diff = if type == :sell
+                    num_shares * -1.0
+                  else
+                    num_shares
+                  end
+    signed_value = signed_diff * price
 
-    if order[:type] == :buy && value > @cash
+    if signed_diff == 0
+      p "no order"
+    elsif type == :buy && signed_value > @cash
       p "not enough cash to buy"
-    elsif diff.abs != 0
-      @holdings[symbol] += diff
-      @cash = (@cash - value).round 3
+    else
+      @holdings[symbol] += signed_diff
+      @cash = (@cash - signed_value).round 3
       @total_commissions += @commission_per_trade
 
-      p "#{order[:type]} #{diff.abs} share(s) @ $#{price}"
+      p "#{type} #{num_shares} share(s) @ $#{price}"
     end
-
-    summary.each { |l| p l }
-    puts
   end
 
   def total_value
