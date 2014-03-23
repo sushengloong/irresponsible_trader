@@ -4,30 +4,29 @@
 
 module Strategy
   class SimpleStrategy < Base
-    LIMIT = 1
-
-    def initialize feeder, starting_capital, commission_per_trade
+    def initialize feeder, starting_capital, commission_per_trade, limit
       @feeder = feeder
       Frappuccino::Stream.new(feeder).
         select{ |event| event.has_key?(:bar) && event[:bar].present? }.
         map{ |event| event[:bar] }.
         on_value(&method(:on_bar))
 
-      @portfolio = Portfolio.new self, starting_capital, commission_per_trade
+      @portfolio = Portfolio::Base.new self, starting_capital, commission_per_trade
+      @limit = limit
       @last_close = {}
     end
 
     def on_bar bar
       @date = bar.date
       bar.bar_data.each do |symbol, data|
-        holding_for_symbol = @portfolio.holdings[symbol].to_i
+        holding_num_shares = @portfolio.holdings.num_shares_for_symbol symbol
         current_close = data[:adj_close].to_f
         last_close = @last_close[symbol].to_f
         change = current_close - last_close
         change_pct = (change / last_close) * 100
-        trade_type = if holding_for_symbol == 0 && change < 0
+        trade_type = if holding_num_shares == 0 && change < 0
                        :buy
-                     elsif holding_for_symbol > 0 && change_pct > LIMIT
+                     elsif holding_num_shares > 0 && change_pct > @limit
                        :sell
                      end
 

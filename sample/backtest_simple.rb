@@ -15,7 +15,7 @@ feeder = Feeder.new start_date,
                     stock_symbols
 
 # Initialize custom strategy with the feeder.
-simple_strategy = Strategy::SimpleStrategy.new feeder, starting_capital, commission_per_trade
+simple_strategy = Strategy::SimpleStrategy.new feeder, starting_capital, commission_per_trade, 1
 
 # Begin backtesting
 simple_strategy.start

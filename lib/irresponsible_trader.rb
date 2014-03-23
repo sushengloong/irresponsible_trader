@@ -16,5 +16,5 @@ module IrresponsibleTrader
   require_relative 'bar'
   require_relative 'bar_data'
   require_relative 'strategy/all'
-  require_relative 'portfolio'
+  require_relative 'portfolio/all'
 end
