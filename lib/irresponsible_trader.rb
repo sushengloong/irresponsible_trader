@@ -1,9 +1,9 @@
 module IrresponsibleTrader
+  require 'awesome_print'
   require 'active_support'
   require 'active_support/time'
   require 'typhoeus'
   require 'csv'
-  require 'awesome_print'
   require 'frappuccino'
 
   # configure application timezone
