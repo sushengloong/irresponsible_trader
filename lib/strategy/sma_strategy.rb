@@ -7,7 +7,7 @@ module Strategy
     def initialize feeder, starting_capital, commission_per_trade
       @feeder = feeder
       @feeder_stream = Frappuccino::Stream.new feeder
-      @sma_stream = Frappuccino::Stream.new SimpleMovingAverage.new(@feeder_stream, 7, 20)
+      @sma_stream = Frappuccino::Stream.new Technical::SimpleMovingAverage.new(@feeder_stream, 7, 20)
       @sma_stream.on_value(&method(:on_sma))
       Frappuccino::Stream.new Portfolio::Base.new(self, starting_capital, commission_per_trade)
     end
